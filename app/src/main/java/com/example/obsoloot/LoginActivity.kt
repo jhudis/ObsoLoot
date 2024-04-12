@@ -26,40 +26,38 @@ import com.example.obsoloot.ui.theme.ObsoLootTheme
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            LoginActivityContent()
-        }
+        setContent { Content() }
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun LoginActivityContent() {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    ObsoLootTheme {
-        Surface(Modifier.fillMaxSize()) {
-            Column(
-                Modifier.padding(16.dp, 48.dp),
-                Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-                Alignment.CenterHorizontally
-            ) {
-                Text(
-                    "Log In or Sign Up",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                TextField(
-                    username,
-                    { username = it },
-                    placeholder = { Text("Username") }
-                )
-                TextField(
-                    password,
-                    { password = it },
-                    placeholder = { Text("Password") }
-                )
-                Button(onClick = { /*TODO*/ }) {
-                    Text("Submit")
+    @Preview(showBackground = true)
+    @Composable
+    fun Content() {
+        var username by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+        ObsoLootTheme {
+            Surface(Modifier.fillMaxSize()) {
+                Column(
+                    Modifier.padding(16.dp, 48.dp),
+                    Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                    Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "Log In or Sign Up",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    TextField(
+                        username,
+                        { username = it },
+                        placeholder = { Text("Username") }
+                    )
+                    TextField(
+                        password,
+                        { password = it },
+                        placeholder = { Text("Password") }
+                    )
+                    Button(onClick = { /*TODO*/ }) {
+                        Text("Submit")
+                    }
                 }
             }
         }
