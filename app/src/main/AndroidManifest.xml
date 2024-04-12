@@ -13,9 +13,12 @@
         android:theme="@style/Theme.ObsoLoot"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ObsoLoot" />
+        <activity
+            android:name=".WelcomeActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.ObsoLoot">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
