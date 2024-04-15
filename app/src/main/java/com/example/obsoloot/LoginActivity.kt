@@ -13,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,8 +23,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.obsoloot.ui.theme.ObsoLootTheme
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+
+private const val HUB_URL = "https://berrysmart.games/"
 
 class LoginActivity : ComponentActivity() {
+    private var client = HttpClient(CIO)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent { Content() }
@@ -34,6 +44,7 @@ class LoginActivity : ComponentActivity() {
     fun Content() {
         var username by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
+        var submitted by remember { mutableStateOf(false) }
         ObsoLootTheme {
             Surface(Modifier.fillMaxSize()) {
                 Column(
@@ -55,11 +66,18 @@ class LoginActivity : ComponentActivity() {
                         { password = it },
                         placeholder = { Text("Password") }
                     )
-                    Button(onClick = { /*TODO*/ }) {
+                    Button(onClick = { submitted = true }) {
                         Text("Submit")
                     }
                 }
             }
         }
+        LaunchedEffect(submitted) {
+            if (!submitted) return@LaunchedEffect
+            val response: HttpResponse = client.get("${HUB_URL}login?username=${username}&password=${password}")
+            println(response.status.value)
+            println(response.bodyAsText())
+        }
     }
+
 }
