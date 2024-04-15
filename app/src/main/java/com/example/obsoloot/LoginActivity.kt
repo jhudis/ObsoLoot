@@ -45,6 +45,7 @@ class LoginActivity : ComponentActivity() {
         var username by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var submitted by remember { mutableStateOf(false) }
+        var errorText by remember { mutableStateOf("") }
         ObsoLootTheme {
             Surface(Modifier.fillMaxSize()) {
                 Column(
@@ -58,13 +59,19 @@ class LoginActivity : ComponentActivity() {
                     )
                     TextField(
                         username,
-                        { username = it },
+                        { username = it; errorText = "" },
                         placeholder = { Text("Username") }
                     )
                     TextField(
                         password,
-                        { password = it },
-                        placeholder = { Text("Password") }
+                        { password = it; errorText = "" },
+                        placeholder = { Text("Password") },
+                        supportingText = @Composable {
+                            Text(
+                                text = errorText,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
                     )
                     Button(onClick = { submitted = true }) {
                         Text("Submit")
@@ -75,8 +82,12 @@ class LoginActivity : ComponentActivity() {
         LaunchedEffect(submitted) {
             if (!submitted) return@LaunchedEffect
             val response: HttpResponse = client.get("${HUB_URL}login?username=${username}&password=${password}")
-            println(response.status.value)
-            println(response.bodyAsText())
+            if (response.status.value == 200) {
+                // TODO
+            } else {
+                errorText = response.bodyAsText()
+                submitted = false
+            }
         }
     }
 
