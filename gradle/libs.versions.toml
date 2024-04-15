@@ -9,6 +9,7 @@ lifecycleRuntimeKtx = "2.7.0"
 activityCompose = "1.8.2"
 composeBom = "2024.04.00"
 ktor_version="2.3.10"
+datastorePreferences = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -27,6 +28,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor_version" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor_version" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

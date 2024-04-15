@@ -1,5 +1,6 @@
 package com.example.obsoloot
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.edit
 import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -29,11 +31,10 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 
+private var httpClient = HttpClient(CIO)
 private const val HUB_URL = "https://berrysmart.games/"
 
 class LoginActivity : ComponentActivity() {
-    private var client = HttpClient(CIO)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent { Content() }
@@ -81,11 +82,13 @@ class LoginActivity : ComponentActivity() {
         }
         LaunchedEffect(submitted) {
             if (!submitted) return@LaunchedEffect
-            val response: HttpResponse = client.get("${HUB_URL}login?username=${username}&password=${password}")
+            val response: HttpResponse = httpClient.get("${HUB_URL}login?username=${username}&password=${password}")
+            val bodyText = response.bodyAsText()
             if (response.status.value == 200) {
-                // TODO
+                dataStore.edit { settings -> settings[OWNER_ID] = bodyText.toInt() }
+                Intent(applicationContext, PrimaryActivity::class.java).also { startActivity(it) }
             } else {
-                errorText = response.bodyAsText()
+                errorText = bodyText
                 submitted = false
             }
         }
