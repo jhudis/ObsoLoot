@@ -40,8 +40,13 @@ val OWNER_ID = intPreferencesKey("owner_id")
 val PHONE_ID = intPreferencesKey("phone_id")
 
 var httpClient = HttpClient(CIO) { install(ContentNegotiation) { json() } }
-@Serializable data class Phone(val id: Int, @SerialName("owner_id") val ownerId: Int, val nickname: String)
 const val HUB_URL = "https://berrysmart.games"
+@Serializable data class Phone(
+    val id: Int,
+    @SerialName("owner_id") val ownerId: Int,
+    val nickname: String,
+    val status: String
+)
 
 class WelcomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

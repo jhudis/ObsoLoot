@@ -35,6 +35,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -81,6 +83,7 @@ class PrimaryActivity : ComponentActivity() {
                 }
             }
             phones = phonesResponse.body()
+            println(phones)
             selfNickname = phones.find { phone -> phone.id == phoneId }?.nickname ?: ""
             editing = false
             newNickname = ""
@@ -140,7 +143,7 @@ class PrimaryActivity : ComponentActivity() {
                     }
                     Spacer(Modifier.height(32.dp))
                     Text(
-                        "All Owned Phones",
+                        "Owned Phones",
                         style = MaterialTheme.typography.titleLarge
                     )
                     Spacer(Modifier.height(8.dp))
@@ -155,7 +158,13 @@ class PrimaryActivity : ComponentActivity() {
                                 ) {
                                     Image(
                                         painterResource(id = R.drawable.ic_phone),
-                                        "Phone icon"
+                                        "Phone icon",
+                                        colorFilter = ColorFilter.tint(when(phone.status) {
+                                            "ACTIVE" -> Color.Green
+                                            "IDLE" -> Color.Yellow
+                                            "UNREACHABLE" -> Color.Red
+                                            else -> Color.White
+                                        })
                                     )
                                     Text(phone.nickname)
                                 }
@@ -202,6 +211,17 @@ class PrimaryActivity : ComponentActivity() {
             }
             reloadable = true
             confirmed = false
+        }
+
+        LaunchedEffect(looting) {
+            httpClient.get(HUB_URL) {
+                url {
+                    appendPathSegments("status")
+                    parameters.append("phoneId", phoneId.toString())
+                    parameters.append("status", if (looting) "ACTIVE" else "IDLE")
+                }
+            }
+            reloadable = true
         }
     }
 }
