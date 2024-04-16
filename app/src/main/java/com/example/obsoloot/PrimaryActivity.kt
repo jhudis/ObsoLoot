@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,6 +57,8 @@ class PrimaryActivity : ComponentActivity() {
     fun PreviewableContent(ownerId: Int = 1, phoneId: Int = 1) {
         var phones: List<Phone> by remember { mutableStateOf(emptyList()) }
         var selfNickname by remember { mutableStateOf("") }
+        var notifiable by remember { mutableStateOf(false) }
+        var looting by remember { mutableStateOf(false) }
         LaunchedEffect(ownerId) {
             if (ownerId == 0) return@LaunchedEffect
             val phonesResponse: HttpResponse = httpClient.get(HUB_URL) {
@@ -82,6 +85,34 @@ class PrimaryActivity : ComponentActivity() {
                         "Settings",
                         style = MaterialTheme.typography.titleMedium
                     )
+                    OutlinedCard {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp, 4.dp),
+                            Arrangement.SpaceBetween,
+                            Alignment.CenterVertically
+                        ) {
+                            Text("Toggle notifications")
+                            Switch(
+                                checked = notifiable,
+                                onCheckedChange = { notifiable = it }
+                            )
+                        }
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp, 4.dp),
+                            Arrangement.SpaceBetween,
+                            Alignment.CenterVertically
+                        ) {
+                            Text("Toggle looting")
+                            Switch(
+                                checked = looting,
+                                onCheckedChange = { looting = it }
+                            )
+                        }
+                    }
                     Spacer(Modifier.height(16.dp))
                     Text(
                         "All Owned Phones",
