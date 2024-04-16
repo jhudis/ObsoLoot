@@ -25,16 +25,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.edit
 import com.example.obsoloot.ui.theme.ObsoLootTheme
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.flow.first
-
-private var httpClient = HttpClient(CIO)
-private const val HUB_URL = "https://berrysmart.games"
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,7 +102,7 @@ class LoginActivity : ComponentActivity() {
                 }
                 Intent(applicationContext, PrimaryActivity::class.java).also { startActivity(it) }
             } else {
-                errorText = loginResponse.bodyAsText()
+                errorText = loginResponse.body()
                 submitted = false
             }
         }

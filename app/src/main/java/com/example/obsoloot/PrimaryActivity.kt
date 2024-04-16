@@ -11,12 +11,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.obsoloot.ui.theme.ObsoLootTheme
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.flow.map
 
 class PrimaryActivity : ComponentActivity() {
@@ -36,6 +41,17 @@ class PrimaryActivity : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun PreviewableContent(ownerId: Int = 1, phoneId: Int = 1) {
+        LaunchedEffect(ownerId) {
+            if (ownerId == 0) return@LaunchedEffect
+            val phonesResponse: HttpResponse = httpClient.get(HUB_URL) {
+                url {
+                    appendPathSegments("phones")
+                    parameters.append("ownerId", ownerId.toString())
+                }
+            }
+            val phones: List<Phone> = phonesResponse.body()
+            println(phones)
+        }
         ObsoLootTheme {
             Surface(Modifier.fillMaxSize()) {
                 Column(
