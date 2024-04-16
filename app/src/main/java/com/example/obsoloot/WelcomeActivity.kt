@@ -74,7 +74,7 @@ class WelcomeActivity : ComponentActivity() {
                     )
                     Image(
                         painterResource(id = R.drawable.logo),
-                        "logo",
+                        "Logo",
                         Modifier.size(200.dp)
                     )
                 }
