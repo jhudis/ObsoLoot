@@ -27,6 +27,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.obsoloot.ui.theme.ObsoLootTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "preferences")
 val OWNER_ID = intPreferencesKey("owner_id")
@@ -43,7 +44,12 @@ class WelcomeActivity : ComponentActivity() {
     fun Content() {
         LaunchedEffect(Unit) {
             delay(2000)
-            Intent(applicationContext, LoginActivity::class.java).also { startActivity(it) }
+            val activity = if (dataStore.data.first()[OWNER_ID] == null) {
+                LoginActivity::class
+            } else {
+                PrimaryActivity::class
+            }
+            Intent(applicationContext, activity.java).also { startActivity(it) }
         }
         ObsoLootTheme {
             Surface(Modifier.fillMaxSize()) {
