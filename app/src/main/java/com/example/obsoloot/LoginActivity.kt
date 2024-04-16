@@ -30,9 +30,11 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.appendPathSegments
+import kotlinx.coroutines.flow.first
 
 private var httpClient = HttpClient(CIO)
-private const val HUB_URL = "https://berrysmart.games/"
+private const val HUB_URL = "https://berrysmart.games"
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,13 +84,29 @@ class LoginActivity : ComponentActivity() {
         }
         LaunchedEffect(submitted) {
             if (!submitted) return@LaunchedEffect
-            val response: HttpResponse = httpClient.get("${HUB_URL}login?username=${username}&password=${password}")
-            val bodyText = response.bodyAsText()
-            if (response.status.value == 200) {
-                dataStore.edit { settings -> settings[OWNER_ID] = bodyText.toInt() }
+            val loginResponse: HttpResponse = httpClient.get(HUB_URL) {
+                url {
+                    appendPathSegments("login")
+                    parameters.append("username", username)
+                    parameters.append("password", password)
+                }
+            }
+            if (loginResponse.status.value == 200) {
+                val ownerId = loginResponse.bodyAsText().toInt()
+                dataStore.edit { preferences -> preferences[OWNER_ID] = ownerId }
+                if (dataStore.data.first()[PHONE_ID] == null) {
+                    val registerResponse: HttpResponse = httpClient.get(HUB_URL) {
+                        url {
+                            appendPathSegments("register")
+                            parameters.append("ownerId", ownerId.toString())
+                            parameters.append("nickname", android.os.Build.MODEL)
+                        }
+                    }
+                    dataStore.edit { preferences -> preferences[PHONE_ID] = registerResponse.bodyAsText().toInt() }
+                }
                 Intent(applicationContext, PrimaryActivity::class.java).also { startActivity(it) }
             } else {
-                errorText = bodyText
+                errorText = loginResponse.bodyAsText()
                 submitted = false
             }
         }

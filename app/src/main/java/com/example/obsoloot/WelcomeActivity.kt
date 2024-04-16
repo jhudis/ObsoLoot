@@ -30,6 +30,7 @@ import kotlinx.coroutines.delay
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "preferences")
 val OWNER_ID = intPreferencesKey("owner_id")
+val PHONE_ID = intPreferencesKey("phone_id")
 
 class WelcomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

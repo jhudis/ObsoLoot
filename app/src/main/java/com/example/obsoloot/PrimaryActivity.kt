@@ -28,13 +28,14 @@ class PrimaryActivity : ComponentActivity() {
     @Composable
     fun Content() {
         PreviewableContent(
-            dataStore.data.map { preferences -> preferences[OWNER_ID] ?: 0 }.collectAsState(0).value
+            dataStore.data.map { preferences -> preferences[OWNER_ID] ?: 0 }.collectAsState(0).value,
+            dataStore.data.map { preferences -> preferences[PHONE_ID] ?: 0 }.collectAsState(0).value
         )
     }
 
     @Preview(showBackground = true)
     @Composable
-    fun PreviewableContent(ownerId: Int = 1) {
+    fun PreviewableContent(ownerId: Int = 1, phoneId: Int = 1) {
         ObsoLootTheme {
             Surface(Modifier.fillMaxSize()) {
                 Column(
@@ -44,6 +45,14 @@ class PrimaryActivity : ComponentActivity() {
                 ) {
                     Text(
                         ownerId.toString(),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        phoneId.toString(),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        android.os.Build.MODEL,
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
