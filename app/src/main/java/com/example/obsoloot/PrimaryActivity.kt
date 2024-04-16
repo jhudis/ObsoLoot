@@ -46,6 +46,8 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.flow.map
+import java.util.Date
+import kotlin.concurrent.fixedRateTimer
 
 class PrimaryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,6 +76,10 @@ class PrimaryActivity : ComponentActivity() {
         var editing by remember { mutableStateOf(false) }
         var confirmed by remember { mutableStateOf(false) }
 
+        LaunchedEffect(Unit) {
+            fixedRateTimer("reload", true, Date(System.currentTimeMillis() + 2000), 2000) { reloadable = true }
+        }
+
         LaunchedEffect(ownerId, reloadable) {
             if (ownerId == 0 || !reloadable) return@LaunchedEffect
             val phonesResponse: HttpResponse = httpClient.get(HUB_URL) {
@@ -83,7 +89,6 @@ class PrimaryActivity : ComponentActivity() {
                 }
             }
             phones = phonesResponse.body()
-            println(phones)
             selfNickname = phones.find { phone -> phone.id == phoneId }?.nickname ?: ""
             editing = false
             newNickname = ""
