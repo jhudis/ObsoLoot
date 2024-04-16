@@ -72,7 +72,7 @@ class LoginActivity : ComponentActivity() {
                             )
                         }
                     )
-                    Button(onClick = { submitted = true }) {
+                    Button({ submitted = true }) {
                         Text("Submit")
                     }
                 }
