@@ -29,9 +29,9 @@ import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -39,8 +39,12 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "pr
 val OWNER_ID = intPreferencesKey("owner_id")
 val PHONE_ID = intPreferencesKey("phone_id")
 
-var httpClient = HttpClient(CIO) { install(ContentNegotiation) { json() } }
-const val HUB_URL = "https://berrysmart.games"
+var webClient = HttpClient(CIO) {
+    install(ContentNegotiation) { json() }
+    install(WebSockets)
+    engine { requestTimeout = 0 }
+}
+const val SERVER_HOST = "berrysmart.games"
 @Serializable data class Phone(
     val id: Int,
     @SerialName("owner_id") val ownerId: Int,
@@ -59,7 +63,8 @@ class WelcomeActivity : ComponentActivity() {
     fun Content() {
         LaunchedEffect(Unit) {
             delay(2000)
-            val activity = if (dataStore.data.first()[OWNER_ID] == null) {
+            val activity = if (true) {
+//            val activity = if (dataStore.data.first()[OWNER_ID] == null) {
                 LoginActivity::class
             } else {
                 PrimaryActivity::class

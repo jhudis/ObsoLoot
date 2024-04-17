@@ -42,9 +42,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.call.body
+import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
+import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.appendPathSegments
+import io.ktor.websocket.close
 import kotlinx.coroutines.flow.map
 import java.util.Date
 import kotlin.concurrent.fixedRateTimer
@@ -67,14 +71,15 @@ class PrimaryActivity : ComponentActivity() {
     @Composable
     fun PreviewableContent(ownerId: Int = 1, phoneId: Int = 1) {
 
+        var reloadable by remember { mutableStateOf(true) }
         var phones: List<Phone> by remember { mutableStateOf(emptyList()) }
-        var selfNickname by remember { mutableStateOf("") }
+        var nickname by remember { mutableStateOf("") }
         var newNickname by remember { mutableStateOf("") }
+        var renamed by remember { mutableStateOf(false) }
         var notifiable by remember { mutableStateOf(false) }
         var looting by remember { mutableStateOf(false) }
-        var reloadable by remember { mutableStateOf(true) }
         var editing by remember { mutableStateOf(false) }
-        var confirmed by remember { mutableStateOf(false) }
+        var session by remember { mutableStateOf<DefaultClientWebSocketSession?>(null) }
 
         LaunchedEffect(Unit) {
             fixedRateTimer("reload", true, Date(System.currentTimeMillis() + 2000), 2000) { reloadable = true }
@@ -82,16 +87,15 @@ class PrimaryActivity : ComponentActivity() {
 
         LaunchedEffect(ownerId, reloadable) {
             if (ownerId == 0 || !reloadable) return@LaunchedEffect
-            val phonesResponse: HttpResponse = httpClient.get(HUB_URL) {
+            val phonesResponse: HttpResponse = webClient.get {
                 url {
+                    host = SERVER_HOST
                     appendPathSegments("phones")
-                    parameters.append("ownerId", ownerId.toString())
+                    parameter("ownerId", ownerId.toString())
                 }
             }
             phones = phonesResponse.body()
-            selfNickname = phones.find { phone -> phone.id == phoneId }?.nickname ?: ""
-            editing = false
-            newNickname = ""
+            nickname = phones.find { phone -> phone.id == phoneId }?.nickname ?: ""
             reloadable = false
         }
 
@@ -103,7 +107,7 @@ class PrimaryActivity : ComponentActivity() {
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            selfNickname,
+                            nickname,
                             style = MaterialTheme.typography.titleLarge
                         )
                         IconButton(onClick = { editing = true }) {
@@ -167,7 +171,7 @@ class PrimaryActivity : ComponentActivity() {
                                         colorFilter = ColorFilter.tint(when(phone.status) {
                                             "ACTIVE" -> Color.Green
                                             "IDLE" -> Color.Yellow
-                                            "UNREACHABLE" -> Color.Red
+                                            "ERROR" -> Color.Red
                                             else -> Color.White
                                         })
                                     )
@@ -191,7 +195,7 @@ class PrimaryActivity : ComponentActivity() {
                         )
                     },
                     confirmButton = {
-                        TextButton({ confirmed = true }) {
+                        TextButton({ editing = false; renamed = true }) {
                             Text("Confirm")
                         }
                     },
@@ -205,28 +209,34 @@ class PrimaryActivity : ComponentActivity() {
             }
         }
 
-        LaunchedEffect(confirmed) {
-            if (!confirmed) return@LaunchedEffect
-            httpClient.get(HUB_URL) {
+        LaunchedEffect(renamed) {
+            if (!renamed) return@LaunchedEffect
+            webClient.get {
                 url {
+                    host = SERVER_HOST
                     appendPathSegments("nickname")
-                    parameters.append("phoneId", phoneId.toString())
-                    parameters.append("nickname", newNickname)
+                    parameter("phoneId", phoneId.toString())
+                    parameter("nickname", newNickname)
                 }
             }
-            reloadable = true
-            confirmed = false
+            newNickname = ""
+            renamed = false
         }
 
         LaunchedEffect(looting) {
-            httpClient.get(HUB_URL) {
-                url {
-                    appendPathSegments("status")
-                    parameters.append("phoneId", phoneId.toString())
-                    parameters.append("status", if (looting) "ACTIVE" else "IDLE")
+            if (looting) {
+                session = webClient.webSocketSession {
+                    url {
+                        host = SERVER_HOST
+                        appendPathSegments("loot")
+                        parameter("phoneId", phoneId)
+                    }
                 }
+                session!!.incoming.receive()
+            } else {
+                session?.close()
+                session = null
             }
-            reloadable = true
         }
     }
 }

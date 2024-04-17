@@ -27,8 +27,8 @@ import androidx.datastore.preferences.core.edit
 import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.flow.first
 
@@ -80,25 +80,27 @@ class LoginActivity : ComponentActivity() {
         }
         LaunchedEffect(submitted) {
             if (!submitted) return@LaunchedEffect
-            val loginResponse: HttpResponse = httpClient.get(HUB_URL) {
+            val loginResponse: HttpResponse = webClient.get {
                 url {
+                    host = SERVER_HOST
                     appendPathSegments("login")
-                    parameters.append("username", username)
-                    parameters.append("password", password)
+                    parameter("username", username)
+                    parameter("password", password)
                 }
             }
             if (loginResponse.status.value == 200) {
-                val ownerId = loginResponse.bodyAsText().toInt()
+                val ownerId: Int = loginResponse.body()
                 dataStore.edit { preferences -> preferences[OWNER_ID] = ownerId }
                 if (dataStore.data.first()[PHONE_ID] == null) {
-                    val registerResponse: HttpResponse = httpClient.get(HUB_URL) {
+                    val registerResponse: HttpResponse = webClient.get {
                         url {
+                            host = SERVER_HOST
                             appendPathSegments("register")
-                            parameters.append("ownerId", ownerId.toString())
-                            parameters.append("nickname", android.os.Build.MODEL)
+                            parameter("ownerId", ownerId.toString())
+                            parameter("nickname", android.os.Build.MODEL)
                         }
                     }
-                    dataStore.edit { preferences -> preferences[PHONE_ID] = registerResponse.bodyAsText().toInt() }
+                    dataStore.edit { preferences -> preferences[PHONE_ID] = registerResponse.body() }
                 }
                 Intent(applicationContext, PrimaryActivity::class.java).also { startActivity(it) }
             } else {
