@@ -32,6 +32,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -63,8 +64,7 @@ class WelcomeActivity : ComponentActivity() {
     fun Content() {
         LaunchedEffect(Unit) {
             delay(2000)
-            val activity = if (true) {
-//            val activity = if (dataStore.data.first()[OWNER_ID] == null) {
+            val activity = if (dataStore.data.first()[OWNER_ID] == null) {
                 LoginActivity::class
             } else {
                 PrimaryActivity::class
