@@ -25,6 +25,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import bsh.Interpreter
 import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -40,7 +41,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "pr
 val OWNER_ID = intPreferencesKey("owner_id")
 val PHONE_ID = intPreferencesKey("phone_id")
 
-var webClient = HttpClient(CIO) {
+val webClient = HttpClient(CIO) {
     install(ContentNegotiation) { json() }
     install(WebSockets)
     engine { requestTimeout = 0 }
@@ -52,6 +53,13 @@ const val SERVER_HOST = "berrysmart.games"
     val nickname: String,
     val status: String
 )
+@Serializable data class Task(
+    val name: String,
+    val method: String,
+    val code: String
+)
+
+val interpreter = Interpreter()
 
 class WelcomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

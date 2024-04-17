@@ -26,8 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.edit
 import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.call.body
-import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.flow.first
@@ -80,7 +80,7 @@ class LoginActivity : ComponentActivity() {
         }
         LaunchedEffect(submitted) {
             if (!submitted) return@LaunchedEffect
-            val loginResponse: HttpResponse = webClient.get {
+            val loginResponse: HttpResponse = webClient.post {
                 url {
                     host = SERVER_HOST
                     appendPathSegments("login")
@@ -92,7 +92,7 @@ class LoginActivity : ComponentActivity() {
                 val ownerId: Int = loginResponse.body()
                 dataStore.edit { preferences -> preferences[OWNER_ID] = ownerId }
                 if (dataStore.data.first()[PHONE_ID] == null) {
-                    val registerResponse: HttpResponse = webClient.get {
+                    val registerResponse: HttpResponse = webClient.post {
                         url {
                             host = SERVER_HOST
                             appendPathSegments("register")

@@ -46,9 +46,12 @@ import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.put
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.appendPathSegments
+import io.ktor.websocket.Frame
 import io.ktor.websocket.close
+import io.ktor.websocket.readText
 import kotlinx.coroutines.flow.map
 import java.util.Date
 import kotlin.concurrent.fixedRateTimer
@@ -80,6 +83,7 @@ class PrimaryActivity : ComponentActivity() {
         var looting by remember { mutableStateOf(false) }
         var editing by remember { mutableStateOf(false) }
         var session by remember { mutableStateOf<DefaultClientWebSocketSession?>(null) }
+        var tasks by remember { mutableStateOf<Map<String, Task>>(emptyMap()) }
 
         LaunchedEffect(Unit) {
             fixedRateTimer("reload", true, Date(System.currentTimeMillis() + 2000), 2000) { reloadable = true }
@@ -211,7 +215,7 @@ class PrimaryActivity : ComponentActivity() {
 
         LaunchedEffect(renamed) {
             if (!renamed) return@LaunchedEffect
-            webClient.get {
+            webClient.put {
                 url {
                     host = SERVER_HOST
                     appendPathSegments("nickname")
@@ -232,7 +236,25 @@ class PrimaryActivity : ComponentActivity() {
                         parameter("phoneId", phoneId)
                     }
                 }
-                session!!.incoming.receive()
+                while (true) {
+                    val taskName = (session!!.incoming.receive() as Frame.Text).readText()
+                    val taskArgs = (session!!.incoming.receive() as Frame.Text).readText()
+                    if (taskName !in tasks) {
+                        val taskResponse = webClient.get {
+                            url {
+                                host = SERVER_HOST
+                                appendPathSegments("task")
+                                parameter("name", taskName)
+                            }
+                        }
+                        val task: Task = taskResponse.body()
+                        tasks += taskName to task
+                        interpreter.eval(task.code)
+                    }
+                    val task = tasks[taskName]
+                    val result = interpreter.eval("${task?.method}($taskArgs);").toString()
+                    session!!.send(Frame.Text(result))
+                }
             } else {
                 session?.close()
                 session = null
