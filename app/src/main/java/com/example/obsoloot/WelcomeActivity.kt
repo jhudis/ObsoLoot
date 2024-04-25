@@ -29,6 +29,7 @@ import bsh.Interpreter
 import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.serialization.kotlinx.json.json
@@ -44,7 +45,7 @@ val PHONE_ID = intPreferencesKey("phone_id")
 val webClient = HttpClient(CIO) {
     install(ContentNegotiation) { json() }
     install(WebSockets)
-    engine { requestTimeout = 0 }
+    install(HttpTimeout) { connectTimeoutMillis = HttpTimeout.INFINITE_TIMEOUT_MS }
 }
 const val SERVER_HOST = "berrysmart.games"
 @Serializable data class Phone(
