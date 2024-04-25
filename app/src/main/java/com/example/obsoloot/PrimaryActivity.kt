@@ -54,6 +54,7 @@ import io.ktor.http.appendPathSegments
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.flow.map
 import java.util.Date
 import kotlin.concurrent.fixedRateTimer
@@ -246,23 +247,27 @@ class PrimaryActivity : ComponentActivity() {
                     }
                 }
                 while (true) {
-                    val taskName = (session!!.incoming.receive() as Frame.Text).readText()
-                    val taskArgs = (session!!.incoming.receive() as Frame.Text).readText()
-                    if (taskName !in tasks) {
-                        val taskResponse = webClient.get {
-                            url {
-                                host = SERVER_HOST
-                                appendPathSegments("task")
-                                parameter("name", taskName)
+                    try {
+                        val taskName = (session!!.incoming.receive() as Frame.Text).readText()
+                        val taskArgs = (session!!.incoming.receive() as Frame.Text).readText()
+                        if (taskName !in tasks) {
+                            val taskResponse = webClient.get {
+                                url {
+                                    host = SERVER_HOST
+                                    appendPathSegments("task")
+                                    parameter("name", taskName)
+                                }
                             }
+                            val task: Task = taskResponse.body()
+                            tasks += taskName to task
+                            interpreter.eval(task.code)
                         }
-                        val task: Task = taskResponse.body()
-                        tasks += taskName to task
-                        interpreter.eval(task.code)
+                        val task = tasks[taskName]
+                        val result = interpreter.eval("${task?.method}($taskArgs);").toString()
+                        session!!.send(Frame.Text(result))
+                    } catch (_: ClosedReceiveChannelException) {
+                        // TODO: Alert user that the phone lost connection to the hub
                     }
-                    val task = tasks[taskName]
-                    val result = interpreter.eval("${task?.method}($taskArgs);").toString()
-                    session!!.send(Frame.Text(result))
                 }
             } else {
                 session?.close()
