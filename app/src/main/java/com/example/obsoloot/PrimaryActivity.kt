@@ -41,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.obsoloot.ui.theme.ObsoLootTheme
+import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.webSocketSession
@@ -100,9 +101,14 @@ class PrimaryActivity : ComponentActivity() {
                     parameter("ownerId", ownerId.toString())
                 }
             }
-            phones = phonesResponse.body()
-            nickname = phones.find { phone -> phone.id == phoneId }?.nickname ?: ""
-            reloadable = false
+            try {
+                phones = phonesResponse.body()
+                nickname = phones.find { phone -> phone.id == phoneId }?.nickname ?: ""
+            } catch (_: NoTransformationFoundException) {
+                // Hub is probably down, do nothing for now
+            } finally {
+                reloadable = false
+            }
         }
 
         ObsoLootTheme {
