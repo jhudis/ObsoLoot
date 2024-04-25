@@ -29,6 +29,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.flow.first
 
@@ -82,6 +83,7 @@ class LoginActivity : ComponentActivity() {
             if (!submitted) return@LaunchedEffect
             val loginResponse: HttpResponse = webClient.post {
                 url {
+                    protocol = URLProtocol.HTTPS
                     host = SERVER_HOST
                     appendPathSegments("login")
                     parameter("username", username)
@@ -94,6 +96,7 @@ class LoginActivity : ComponentActivity() {
                 if (dataStore.data.first()[PHONE_ID] == null) {
                     val registerResponse: HttpResponse = webClient.post {
                         url {
+                            protocol = URLProtocol.HTTPS
                             host = SERVER_HOST
                             appendPathSegments("register")
                             parameter("ownerId", ownerId.toString())

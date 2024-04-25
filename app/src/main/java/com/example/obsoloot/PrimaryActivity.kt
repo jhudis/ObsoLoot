@@ -48,6 +48,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.put
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
@@ -93,6 +94,7 @@ class PrimaryActivity : ComponentActivity() {
             if (ownerId == 0 || !reloadable) return@LaunchedEffect
             val phonesResponse: HttpResponse = webClient.get {
                 url {
+                    protocol = URLProtocol.HTTPS
                     host = SERVER_HOST
                     appendPathSegments("phones")
                     parameter("ownerId", ownerId.toString())
@@ -217,6 +219,7 @@ class PrimaryActivity : ComponentActivity() {
             if (!renamed) return@LaunchedEffect
             webClient.put {
                 url {
+                    protocol = URLProtocol.HTTPS
                     host = SERVER_HOST
                     appendPathSegments("nickname")
                     parameter("phoneId", phoneId.toString())
