@@ -43,12 +43,12 @@ import androidx.compose.ui.unit.dp
 import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
+import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.put
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
 import io.ktor.websocket.Frame
@@ -94,19 +94,21 @@ class PrimaryActivity : ComponentActivity() {
 
         LaunchedEffect(ownerId, reloadable) {
             if (ownerId == 0 || !reloadable) return@LaunchedEffect
-            val phonesResponse: HttpResponse = webClient.get {
-                url {
-                    protocol = URLProtocol.HTTPS
-                    host = SERVER_HOST
-                    appendPathSegments("phones")
-                    parameter("ownerId", ownerId.toString())
-                }
-            }
             try {
+                val phonesResponse = webClient.get {
+                    url {
+                        protocol = URLProtocol.HTTPS
+                        host = SERVER_HOST
+                        appendPathSegments("phones")
+                        parameter("ownerId", ownerId.toString())
+                    }
+                }
                 phones = phonesResponse.body()
                 nickname = phones.find { phone -> phone.id == phoneId }?.nickname ?: ""
+            } catch (_: ConnectTimeoutException) {
+                // Request mysteriously took a long amount of time, try again later
             } catch (_: NoTransformationFoundException) {
-                // Hub is probably down, do nothing for now
+                // Hub is probably down, try again later
             } finally {
                 reloadable = false
             }

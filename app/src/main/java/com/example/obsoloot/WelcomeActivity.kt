@@ -45,7 +45,7 @@ val PHONE_ID = intPreferencesKey("phone_id")
 val webClient = HttpClient(CIO) {
     install(ContentNegotiation) { json() }
     install(WebSockets)
-    install(HttpTimeout) { connectTimeoutMillis = HttpTimeout.INFINITE_TIMEOUT_MS }
+    install(HttpTimeout) { connectTimeoutMillis = 1000 }
 }
 const val SERVER_HOST = "berrysmart.games"
 @Serializable data class Phone(

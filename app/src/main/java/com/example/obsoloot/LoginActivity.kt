@@ -28,7 +28,6 @@ import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.call.body
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.flow.first
@@ -81,7 +80,7 @@ class LoginActivity : ComponentActivity() {
         }
         LaunchedEffect(submitted) {
             if (!submitted) return@LaunchedEffect
-            val loginResponse: HttpResponse = webClient.post {
+            val loginResponse = webClient.post {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = SERVER_HOST
@@ -94,7 +93,7 @@ class LoginActivity : ComponentActivity() {
                 val ownerId: Int = loginResponse.body()
                 dataStore.edit { preferences -> preferences[OWNER_ID] = ownerId }
                 if (dataStore.data.first()[PHONE_ID] == null) {
-                    val registerResponse: HttpResponse = webClient.post {
+                    val registerResponse = webClient.post {
                         url {
                             protocol = URLProtocol.HTTPS
                             host = SERVER_HOST
