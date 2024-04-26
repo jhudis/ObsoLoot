@@ -46,6 +46,7 @@ val webClient = HttpClient(CIO) {
     install(ContentNegotiation) { json() }
     install(WebSockets)
     install(HttpTimeout) { connectTimeoutMillis = 1000 }
+    engine { endpoint.maxConnectionsPerRoute = Int.MAX_VALUE }
 }
 const val SERVER_HOST = "berrysmart.games"
 @Serializable data class Phone(
