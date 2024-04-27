@@ -29,6 +29,7 @@ import bsh.Interpreter
 import com.example.obsoloot.ui.theme.ObsoLootTheme
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.endpoint
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.websocket.WebSockets
@@ -46,7 +47,12 @@ val webClient = HttpClient(CIO) {
     install(ContentNegotiation) { json() }
     install(WebSockets)
     install(HttpTimeout) { connectTimeoutMillis = 1000 }
-    engine { endpoint.maxConnectionsPerRoute = Int.MAX_VALUE }
+    engine {
+        endpoint {
+            maxConnectionsCount = Int.MAX_VALUE
+            maxConnectionsPerRoute = Int.MAX_VALUE
+        }
+    }
 }
 const val SERVER_HOST = "berrysmart.games"
 @Serializable data class Phone(

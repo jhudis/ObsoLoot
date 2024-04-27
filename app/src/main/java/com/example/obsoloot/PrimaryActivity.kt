@@ -89,7 +89,7 @@ class PrimaryActivity : ComponentActivity() {
         var tasks by remember { mutableStateOf<Map<String, Task>>(emptyMap()) }
 
         LaunchedEffect(Unit) {
-            fixedRateTimer("reload", true, Date(System.currentTimeMillis() + 2000), 2000) { reloadable = true }
+            fixedRateTimer("reload", true, Date(System.currentTimeMillis() + 2000), 1000) { reloadable = true }
         }
 
         LaunchedEffect(ownerId, reloadable) {
@@ -106,7 +106,7 @@ class PrimaryActivity : ComponentActivity() {
                 phones = phonesResponse.body()
                 nickname = phones.find { phone -> phone.id == phoneId }?.nickname ?: ""
             } catch (_: ConnectTimeoutException) {
-                // Request mysteriously took a long amount of time, try again later
+                // Request timed out, try again later
             } catch (_: NoTransformationFoundException) {
                 // Hub is probably down, try again later
             } finally {
